@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+					   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+					   x:Class="ListViewMemoryLeak.ListViewPage">
+	<ListView x:Name="MyListView" RowHeight="300">
+		<ListView.ItemTemplate>
+			<DataTemplate>
+				<ViewCell>
+					<ViewCell.View>
+						<AbsoluteLayout>
+							<Image Source="{Binding WebImage}" BindingContextChanged="ImageOnBindingContextChanged" WidthRequest="300" HeightRequest="300"/>
+						</AbsoluteLayout>
+					</ViewCell.View>
+				</ViewCell>
+			</DataTemplate>
+		</ListView.ItemTemplate>
+	</ListView>
+	
+</ContentPage>
