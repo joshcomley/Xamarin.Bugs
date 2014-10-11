@@ -1,6 +1,4 @@
 using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Xamarin.Forms;
 
 namespace ListViewMemoryLeak
@@ -12,33 +10,13 @@ namespace ListViewMemoryLeak
 
 		public Action ClearMemory { get; set; }
 
-		public async Task<bool> MuteAsync()
+		public void Mute()
 		{
-			if (Muted) return true;
-			var cancelled = false;
-			if (Source != null)
-			{
-				//					cancelled = await Source.Cancel();
-				//var r = new ManualResetEvent(false);
-				//Source.Cancel()
-				//	.ContinueWith(task =>
-				//	{
-				//		r.Set();
-				//	});
-				//r.WaitOne();
-			}
+			if (Muted) return;
 			MutedSource = Source;
-			//		if (ClearMemory != null) ClearMemory();
-			//			(Source as UriImageSource).Uri = null;
 			Source = null;
 			Muted = true;
-			return cancelled;
 		}
-
-		public static FileImageSource Tiny = new FileImageSource
-		{
-			File = "Tiny.bmp"
-		};
 
 		public void Unmute()
 		{

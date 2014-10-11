@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using Xamarin.Forms;
 
@@ -9,15 +7,8 @@ namespace ListViewMemoryLeak
 	// ReSharper disable once PartialTypeWithSinglePart
 	public partial class TabPage : TabbedPage
 	{
-		private readonly ManualResetEvent _muteWait = new ManualResetEvent(true);
-		private readonly ManualResetEvent _pageChangedWait = new ManualResetEvent(true);
-		private readonly List<IMutable> _pagesWithMuteEvent = new List<IMutable>();
-		private readonly List<IMutable> _pagesWithUnmuteEvent = new List<IMutable>();
-		private readonly ManualResetEvent _unmuteWait = new ManualResetEvent(true);
-
-		private IMutable _latestPage = null;
 		private Page _latestReadyPage;
-		private IMutable _waitingFor;
+		private IMutable _waitingForPage;
 
 		public TabPage()
 		{
@@ -71,28 +62,19 @@ namespace ListViewMemoryLeak
 			}
 		}
 
-		private Page LastPage { get; set; }
-
 		private void OnCurrentPageChanged(object sender, EventArgs eventArgs)
 		{
-			//var oldPage = LastPage;
-			LastPage = CurrentPage;
-			//var oldPageMutable = oldPage as IMutable;
-			if (_waitingFor != null)
+			if (_waitingForPage != null)
 			{
 				return;
 			}
-			//if (oldPageMutable != null && oldPageMutable.IsLoading)
-			//{
-			//	return;
-			//}
 			LoadCurrentTab();
 		}
 
 		private void OnPageReady(object sender, EventArgs eventArgs)
 		{
-			_waitingFor.PageReady -= OnPageReady;
-			_waitingFor = null;
+			_waitingForPage.PageReady -= OnPageReady;
+			_waitingForPage = null;
 			_latestReadyPage = sender as Page;
 			if(_latestReadyPage != CurrentPage)
 				LoadCurrentTab();
@@ -103,10 +85,10 @@ namespace ListViewMemoryLeak
 			var lastMutable = _latestReadyPage as IMutable;
 			if (lastMutable != null)
 			{
-				Device.BeginInvokeOnMainThread(async () =>
+				Device.BeginInvokeOnMainThread(() =>
 				{
 					lastMutable.PageMuted += LastMutableOnPageMuted;
-					await lastMutable.MuteAsync();
+					lastMutable.Mute();
 				});
 			}
 			else
@@ -121,8 +103,8 @@ namespace ListViewMemoryLeak
 			{
 				var currentMutable = CurrentPage as IMutable;
 				if (currentMutable == null) return;
-				_waitingFor = currentMutable;
-				_waitingFor.PageReady += OnPageReady;
+				_waitingForPage = currentMutable;
+				_waitingForPage.PageReady += OnPageReady;
 				Device.BeginInvokeOnMainThread(currentMutable.Unmute);
 			});
 		}
@@ -131,79 +113,6 @@ namespace ListViewMemoryLeak
 		{
 			(sender as IMutable).PageMuted -= LastMutableOnPageMuted;
 			LoadCurrentPage();
-		}
-
-		private async void OnCurrentPageChanged2(object sender, EventArgs eventArgs)
-		{
-			var lastPage = LastPage;
-			LastPage = CurrentPage;
-			// Wait for unmute to complete
-			//_pageChangedWait.WaitOne();
-			_pageChangedWait.Reset();
-			if (lastPage != null && (lastPage as IMutable).IsLoading)
-			{
-				(lastPage as IMutable).PageReady += OnPageReady;
-				return;
-			}
-			Func<Task> action = async () =>
-			{
-				_unmuteWait.WaitOne();
-				_muteWait.WaitOne();
-
-				if (lastPage != null)
-				{
-					var mutable = lastPage as IMutable;
-					if (mutable != null)
-					{
-						if (!_pagesWithMuteEvent.Contains(mutable))
-						{
-							_pagesWithMuteEvent.Add(mutable);
-							mutable.PageMuted += MutableOnPageMuted;
-						}
-						_muteWait.Reset();
-						Device.BeginInvokeOnMainThread(async () => { await mutable.MuteAsync(); });
-						//Device.BeginInvokeOnMainThread(mutable.MuteAsync);
-						// Wait for mute to complete
-						_muteWait.WaitOne();
-						//mutable.PageMuted -= MutableOnPageMuted;
-					}
-				}
-				// Start in a new thread to give GC a chance
-				await Task.Factory.StartNew(() =>
-				{
-					var unmutable = CurrentPage as IMutable;
-					if (unmutable != null)
-					{
-						if (!_pagesWithUnmuteEvent.Contains(unmutable))
-						{
-							_pagesWithUnmuteEvent.Add(unmutable);
-							unmutable.PageReady += UnmutableOnPageReady;
-						}
-						_unmuteWait.Reset();
-						Device.BeginInvokeOnMainThread(unmutable.Unmute);
-						// Wait for unmute to complete
-						_unmuteWait.WaitOne();
-						//unmutable.PageUnmuted -= UnmutableOnPageUnmuted;
-					}
-				})
-					.ContinueWith(t =>
-					{
-						_pageChangedWait.Set();
-						IsEnabled = true;
-					});
-				lastPage = CurrentPage;
-			};
-			await action();
-		}
-
-		private void MutableOnPageMuted(object sender, EventArgs eventArgs)
-		{
-			_muteWait.Set();
-		}
-
-		private void UnmutableOnPageReady(object sender, EventArgs eventArgs)
-		{
-			_unmuteWait.Set();
 		}
 
 		private void Add(string title, Func<string, ContentPage> constructor)

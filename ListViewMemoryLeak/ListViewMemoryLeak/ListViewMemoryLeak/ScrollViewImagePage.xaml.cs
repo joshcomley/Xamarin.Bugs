@@ -25,9 +25,9 @@ namespace ListViewMemoryLeak
 			__MyButton.Clicked += MyButtonOnClicked;
 		}
 
-		private async void MyButtonOnClicked(object sender, EventArgs eventArgs)
+		private void MyButtonOnClicked(object sender, EventArgs eventArgs)
 		{
-			await MutableImageList.MuteAsync();
+			MutableImageList.Mute();
 		}
 
 		public ListViewPageConfiguration Configuration { get; set; }
@@ -155,12 +155,10 @@ namespace ListViewMemoryLeak
 		}
 
 		private bool _unloading = false;
-		public async Task<IEnumerable<bool>> MuteAsync()
+		public void Mute()
 		{
 			_unloading = true;
-			//LoadEvent.WaitOne();
-			var result = await MutableImageList.MuteAsync();
-			return result;
+			MutableImageList.Mute();
 		}
 
 		private bool _loaded;
@@ -181,7 +179,7 @@ namespace ListViewMemoryLeak
 		event EventHandler PageReady;
 		event EventHandler PageMuted;
 		bool IsLoading { get; }
-		Task<IEnumerable<bool>> MuteAsync();
+		void Mute();
 		void Unmute();
 	}
 }

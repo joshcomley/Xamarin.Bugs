@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace ListViewMemoryLeak
 {
@@ -7,22 +6,15 @@ namespace ListViewMemoryLeak
 	{
 		private readonly object _lock = new object();
 
-		public async Task<IEnumerable<bool>>  MuteAsync()
+		public void Mute()
 		{
-			var tasks = new List<Task<bool>>();
 			lock (_lock)
 			{
 				foreach (var mutableImage in this)
 				{
-					tasks.Add(mutableImage.MuteAsync());
+					mutableImage.Mute();
 				}
 			}
-			var results = new List<bool>();
-			foreach (var result in tasks)
-			{
-				results.Add(await result);
-			}
-			return results;
 		}
 
 		public void Unmute()
