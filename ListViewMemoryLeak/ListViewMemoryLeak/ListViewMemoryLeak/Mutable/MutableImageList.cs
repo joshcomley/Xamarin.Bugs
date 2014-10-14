@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace ListViewMemoryLeak
+namespace ListViewMemoryLeak.Mutable
 {
 	public class MutableImageList : List<MutableImage>
 	{

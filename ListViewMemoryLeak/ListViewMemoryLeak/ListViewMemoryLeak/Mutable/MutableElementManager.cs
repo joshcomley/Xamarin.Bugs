@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Xamarin.Forms;
 
-namespace ListViewMemoryLeak
+namespace ListViewMemoryLeak.Mutable
 {
 	public class MutableElementManager
 	{

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xamarin.Forms;
 
-namespace ListViewMemoryLeak
+namespace ListViewMemoryLeak.Mutable
 {
 	public class MutablePage : IMutablePage
 	{

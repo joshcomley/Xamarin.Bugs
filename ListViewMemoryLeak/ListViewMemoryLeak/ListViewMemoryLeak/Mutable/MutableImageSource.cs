@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xamarin.Forms;
 
-namespace ListViewMemoryLeak
+namespace ListViewMemoryLeak.Mutable
 {
 	public class MutableImageSource
 	{

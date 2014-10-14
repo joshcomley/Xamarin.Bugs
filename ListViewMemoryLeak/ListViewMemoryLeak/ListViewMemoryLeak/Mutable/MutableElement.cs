@@ -1,7 +1,7 @@
 using System;
 using Xamarin.Forms;
 
-namespace ListViewMemoryLeak
+namespace ListViewMemoryLeak.Mutable
 {
 	public interface IMutableElement
 	{
