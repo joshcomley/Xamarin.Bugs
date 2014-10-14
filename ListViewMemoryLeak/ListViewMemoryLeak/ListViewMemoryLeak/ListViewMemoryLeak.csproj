@@ -38,10 +38,15 @@
     <Compile Include="BlankPage.xaml.cs">
       <DependentUpon>BlankPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="MutableImage.cs" />
-    <Compile Include="MutableImageList.cs" />
-    <Compile Include="MutableImageSource.cs" />
-    <Compile Include="MutableImageSourceList.cs" />
+    <Compile Include="Extensions\ElementExtensions.cs" />
+    <Compile Include="IMutable.cs" />
+    <Compile Include="Mutable\MutableElement.cs" />
+    <Compile Include="Mutable\MutableImage.cs" />
+    <Compile Include="Mutable\MutableImageList.cs" />
+    <Compile Include="Mutable\MutableElementManager.cs" />
+    <Compile Include="Mutable\MutableImageSource.cs" />
+    <Compile Include="Mutable\MutableImageSourceList.cs" />
+    <Compile Include="Mutable\MutablePage.cs" />
     <Compile Include="ScrollViewImagePage.xaml.cs">
       <DependentUpon>ScrollViewImagePage.xaml</DependentUpon>
     </Compile>

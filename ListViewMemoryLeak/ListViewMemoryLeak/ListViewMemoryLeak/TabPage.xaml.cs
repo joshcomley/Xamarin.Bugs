@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Xamarin.Forms;
 
 namespace ListViewMemoryLeak
@@ -7,9 +6,6 @@ namespace ListViewMemoryLeak
 	// ReSharper disable once PartialTypeWithSinglePart
 	public partial class TabPage : TabbedPage
 	{
-		private Page _latestReadyPage;
-		private IMutable _waitingForPage;
-
 		public TabPage()
 		{
 			InitializeComponent();
@@ -27,7 +23,7 @@ namespace ListViewMemoryLeak
 			//Children.Add(new BlankPage("Image3"));
 			//Children.Add(new ImagePage("Scroll1"));
 			//Children.Add(new ImagePage("Scroll"));
-			Children.Add(new ContentPage {Title = "Home"});
+			Children.Add(new ContentPage { Title = "Home" });
 
 			const int numberOfRepetitions = 10;
 			var configuration = new ListViewPageConfiguration
@@ -39,7 +35,6 @@ namespace ListViewMemoryLeak
 				RowHeight = 150,
 				MuteImages = true,
 			};
-			CurrentPageChanged += OnCurrentPageChanged;
 			Func<string, ContentPage> singleImageInListViewPageConstructor = title =>
 				new SingleImageInListViewPage(title,
 					configuration);
@@ -62,69 +57,16 @@ namespace ListViewMemoryLeak
 			}
 		}
 
-		private void OnCurrentPageChanged(object sender, EventArgs eventArgs)
-		{
-			if (_waitingForPage != null)
-			{
-				return;
-			}
-			LoadCurrentTab();
-		}
-
-		private void OnPageReady(object sender, EventArgs eventArgs)
-		{
-			_waitingForPage.PageReady -= OnPageReady;
-			_waitingForPage = null;
-			_latestReadyPage = sender as Page;
-			if(_latestReadyPage != CurrentPage)
-				LoadCurrentTab();
-		}
-
-		private void LoadCurrentTab()
-		{
-			var lastMutable = _latestReadyPage as IMutable;
-			if (lastMutable != null)
-			{
-				Device.BeginInvokeOnMainThread(() =>
-				{
-					lastMutable.PageMuted += LastMutableOnPageMuted;
-					lastMutable.Mute();
-				});
-			}
-			else
-			{
-				LoadCurrentPage();
-			}
-		}
-
-		private void LoadCurrentPage()
-		{
-			Task.Factory.StartNew(() =>
-			{
-				var currentMutable = CurrentPage as IMutable;
-				if (currentMutable == null) return;
-				_waitingForPage = currentMutable;
-				_waitingForPage.PageReady += OnPageReady;
-				Device.BeginInvokeOnMainThread(currentMutable.Unmute);
-			});
-		}
-
-		private void LastMutableOnPageMuted(object sender, EventArgs eventArgs)
-		{
-			(sender as IMutable).PageMuted -= LastMutableOnPageMuted;
-			LoadCurrentPage();
-		}
-
 		private void Add(string title, Func<string, ContentPage> constructor)
 		{
 			Children.Add(constructor(title));
 
 			ToolbarItems.Add(
 				new ToolbarItem
-				{
-					Name = title,
-					Command = new Command(async () => { await Navigation.PushAsync(constructor(title)); }),
-				});
+			{
+				Name = title,
+				Command = new Command(async () => { await Navigation.PushAsync(constructor(title)); }),
+			});
 		}
 	}
 }
